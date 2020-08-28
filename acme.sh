@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/bash
 
 VER=2.8.7
 
@@ -2048,6 +2048,8 @@ _send_signed_request() {
       elif [ "$url" = "$ACME_REVOKE_CERT" ] && [ "$keyfile" != "$ACCOUNT_KEY_PATH" ]; then
         protected="$JWK_HEADERPLACE_PART1$nonce\", \"url\": \"${url}$JWK_HEADERPLACE_PART2, \"jwk\": $jwk"'}'
       else
+        # ACCOUNT_URL="https://acme-v01.api.letsencrypt.org/acme/reg/44864399"
+        # ACCOUNT_URL="https://acme-v02.api.letsencrypt.org/acme/acct/78812746"
         protected="$JWK_HEADERPLACE_PART1$nonce\", \"url\": \"${url}$JWK_HEADERPLACE_PART2, \"kid\": \"${ACCOUNT_URL}\""'}'
       fi
     else
@@ -4128,6 +4130,18 @@ issue() {
   else
     _debug "_saved_account_key_hash is not changed, skip register account."
   fi
+
+  _info "START CUSTOM"
+  _info "Deactivating $AUTH_URL"
+  # if ! _send_signed_request "https://acme-v02.api.letsencrypt.org/acme/authz-v3/6738694684" "{\"status\": \"deactivated\"}"; then
+  if ! _send_signed_request "$AUTH_URL" "{\"status\": \"deactivated\"}"; then
+    _err "Error: $response"
+    return 1
+  fi
+  _err "Error: $response"
+  _info "END_CUSTOM"
+
+  exit 1
 
   if [ -f "$CSR_PATH" ] && [ ! -f "$CERT_KEY_PATH" ]; then
     _info "Signing from existing CSR."
